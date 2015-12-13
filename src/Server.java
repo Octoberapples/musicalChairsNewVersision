@@ -28,9 +28,11 @@ public class Server {
         System.out.println("            The server is running.");
         ServerSocket listener = new ServerSocket(PORT);
         try {
+            while(true) {
             ThreadController clientThread = new ThreadController(listener.accept());
             clientThread.start();
-            PLAYER_LIST.add(clientThread); 
+            PLAYER_LIST.add(clientThread);
+            }
         } finally {
             listener.close();
         }

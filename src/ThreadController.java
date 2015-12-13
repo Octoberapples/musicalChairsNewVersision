@@ -17,7 +17,7 @@ public class ThreadController extends Thread {
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
-    private int HOW_MANY_PLAYERS = 1;
+    private int HOW_MANY_PLAYERS = 2;
 
     public ThreadController(Socket socket) {
         this.socket = socket;
@@ -125,7 +125,7 @@ public class ThreadController extends Thread {
                 String input = in.readLine();
                 String s = input.toUpperCase();
 
-                if (s.matches("CONTINUE")) {
+                /*if (s.matches("CONTINUE")) {
                     Thread.sleep(1000);
                     writeToAllPlayers("Get ready the game will begin now!");
                     Thread.sleep(1000);
@@ -134,7 +134,8 @@ public class ThreadController extends Thread {
                         writer.println("SIT_DOWN");
                     });
 
-                }
+                }*/
+                /*
                 if (s.startsWith("TIMER")) {
                     writeToTheCurrentPlayer(s.substring(6) + "\n");                   
                     Long l = Long.parseLong(s.substring(6));
@@ -142,7 +143,7 @@ public class ThreadController extends Thread {
                         Server.timers.add(l);                        
                   }
                     
-                }
+                }*/
 
                 if (input == null) {
                     return;
