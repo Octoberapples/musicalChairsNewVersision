@@ -91,7 +91,7 @@ public class Client {
     private void run() throws IOException {
 
         // Make connection and initialize streams
-        String serverAddress = "localHost";
+        String serverAddress = "192.168.0.23";
         Socket socket = new Socket(serverAddress, 8080);
         System.out.println("        Successfully created a [SOCKET]");
         //InetAddress my = InetAddress.getLocalHost();
