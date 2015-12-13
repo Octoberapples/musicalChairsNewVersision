@@ -118,6 +118,8 @@ public class Client {
                 out.println("TIMER" + getSitDown());
             }if (line.startsWith("EXIT")) {
                 messageArea.append("You are now no longer part of the game, have a good day!");
+            }if (line.startsWith("BEGIN")) {
+                out.println("YOU_CAN_BEGIN");
             }if (line.startsWith("NOT_ENOUGH_PLAYERS")){               
                 getNeedMorePlayers();       
             }else if (line.startsWith("NAMEACCEPTED")) {
