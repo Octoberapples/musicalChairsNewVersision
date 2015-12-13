@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 
 import javax.swing.JFrame;
@@ -93,6 +94,8 @@ public class Client {
         String serverAddress = "localHost";
         Socket socket = new Socket(serverAddress, 8080);
         System.out.println("        Successfully created a [SOCKET]");
+        //InetAddress my = InetAddress.getLocalHost();
+        //System.out.println(my);
 
         in = new BufferedReader(new InputStreamReader(
                 socket.getInputStream()));

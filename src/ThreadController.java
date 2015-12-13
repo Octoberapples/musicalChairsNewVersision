@@ -17,7 +17,7 @@ public class ThreadController extends Thread {
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
-    private int HOW_MANY_PLAYERS = 2;
+    private int HOW_MANY_PLAYERS = 1;
 
     public ThreadController(Socket socket) {
         this.socket = socket;
@@ -93,6 +93,8 @@ public class ThreadController extends Thread {
 
             //nu vill jag göra en whileloop som väntar till rätt antal spelare ha anlänt
             while (Server.names.size() != HOW_MANY_PLAYERS) {
+                String input = in.readLine();
+                System.out.println(input);
                 break;
             }
 
