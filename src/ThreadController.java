@@ -21,10 +21,12 @@ public class ThreadController extends Thread {
     private int HOW_MANY_PLAYERS = 2;
     public boolean ROUND_STARTED = false;
     public Long TIMER;
+    public int ID;
     List<Long> list = new ArrayList<>();
 
-    public ThreadController(Socket socket) {
+    public ThreadController(Socket socket, int id) {
         this.socket = socket;
+        this.ID = id;
     }
 
     public void writeToAllPlayers(String s) {
@@ -33,23 +35,34 @@ public class ThreadController extends Thread {
         });
     }
 
+    public void writeToAllClients(String s) {
+        for (int i = 0; i < Server.PLAYER_LIST.size(); i++) {
+            Server.PLAYER_LIST.get(i).out.println(s);
+
+        }
+    }
+
+    public void writeToTheCurrentClient(String s) {
+        out.println(s);
+    }
+
     public String whoLost() {
         Long tmpSlowest = (long) 0;
         String nameOfClientThatLost = "";
         for (int i = 0; i < Server.PLAYER_LIST.size(); i++) {
             if (tmpSlowest < Server.PLAYER_LIST.get(i).TIMER) {
                 tmpSlowest = Server.PLAYER_LIST.get(i).TIMER;
-                
+
             }
-            
+
         }
         for (int i = 0; i < Server.PLAYER_LIST.size(); i++) {
             if (tmpSlowest == Server.PLAYER_LIST.get(i).TIMER) {
-                System.out.println("This client lost: "+ Server.PLAYER_LIST.get(i).name);
-                  nameOfClientThatLost =  Server.PLAYER_LIST.get(i).name;
-                  Server.PLAYER_LIST.get(i).out.println("MESSAGE "+"You lost this round" +"\n"+ "Goodbye");
+                System.out.println("This client lost: " + Server.PLAYER_LIST.get(i).name);
+                nameOfClientThatLost = Server.PLAYER_LIST.get(i).name;
+                Server.PLAYER_LIST.get(i).out.println("MESSAGE " + "You lost this round" + "\n" + "Goodbye");
                 Server.PLAYER_LIST.get(i).killTheClient();
-              
+
             }
         }
         return nameOfClientThatLost;
@@ -59,10 +72,14 @@ public class ThreadController extends Thread {
         out.println("MESSAGE " + s);
     }
 
-    
     public void killTheClient() {
         if (name != null) {
             Server.names.remove(name);
+            for (int i = 0; i < Server.PLAYER_LIST.size(); i++) {
+                if (Server.PLAYER_LIST.get(i).name == name) {
+                    Server.PLAYER_LIST.remove(Server.PLAYER_LIST.get(i));
+                }
+            }
         }
         if (out != null) {
             Server.writers.remove(out);
@@ -78,30 +95,28 @@ public class ThreadController extends Thread {
         String pNames1 = pNames.replaceAll("\\p{P}", "");
         return pNames1;
     }
-    
+
+    //MÅSTE KOMMA IHÅG ATT RENSA TIMERS
     public String getTimer() throws IOException {
         String input = in.readLine();
         String s = input.toUpperCase();
         String whoLost = "";
-        
-            if (s.startsWith("TIMER")) {
-                 //writeToTheCurrentPlayer(s.substring(6) + "\n");
-                    Long l = Long.parseLong(s.substring(6));            
-                    TIMER = l;
-                    synchronized (Server.timers) {
-                       Server.timers.add(l);                        
-                    } 
-                    while(!(Server.writers.size() == Server.timers.size())) {
-                       
-                    
-                    }
-                    whoLost = whoLost();
+
+        if (s.startsWith("TIMER")) {
+            //writeToTheCurrentPlayer(s.substring(6) + "\n");
+            Long l = Long.parseLong(s.substring(6));
+            TIMER = l;
+            synchronized (Server.timers) {
+                Server.timers.add(l);
             }
-            else{
-                System.out.println("CURRPUPT");
+            while (!(Server.writers.size() == Server.timers.size())) {
+
             }
-            
-        
+            whoLost = whoLost();
+        } else {
+            System.out.println("CURRPUPT: " + name);
+        }
+
         return whoLost;
     }
 
@@ -174,48 +189,32 @@ public class ThreadController extends Thread {
                 });
                 break;
             }
-            for(int i =0; i<Server.PLAYER_LIST.size();i++){
-                Server.PLAYER_LIST.get(i).ROUND_STARTED=true;
+            for (int i = 0; i < Server.PLAYER_LIST.size(); i++) {
+                Server.PLAYER_LIST.get(i).ROUND_STARTED = true;
             }
             // Accept messages from this client and broadcast them.
             // Ignore other clients that cannot be broadcasted to.
             while (ROUND_STARTED == true) {
                 String input = in.readLine();
                 String s = input.toUpperCase();
-                
+
                 for (int i = 0; i < Server.PLAYER_LIST.size(); i++) {
                     Thread.sleep(1000);
                     writeToAllPlayers("Get ready!");
                     Thread.sleep(1000); //random tid egentligen
                     writeToAllPlayers("The music starts to play");
-                    
-                     Server.writers.stream().forEach((writer) -> {
+
+                    Server.writers.stream().forEach((writer) -> {
                         writer.println("SIT_DOWN");
                     });
-                     String loser = getTimer();
-                     if (Server.PLAYER_LIST.size() == 1) {
-                         writeToAllPlayers("You are the winner!");
-                    }else{
-                     writeToAllPlayers(loser + " lost this round. " + namePlayers() + " are still playing. \n");
-                     }
-                             
-                     
+                    String loser = getTimer();
+                    if (!(Server.PLAYER_LIST.size() == 1)) {
+                        writeToAllPlayers(loser + " lost this round. " + namePlayers() + " are still playing. \n");
+                    } else {
+                        writeToAllPlayers("You are the winner!");
+                    }
+
                 }
-                // Den skriver 
-                //while (s.matches("CONTINUE") && ROUND_STARTED==false) {
-
-                    //for (int i = 0; i < Server.PLAYER_LIST.size(); i++) {
-                    //System.out.println(Server.PLAYER_LIST.get(i));
-                    //Server.PLAYER_LIST.get(i).ROUND_STARTED = true;
-             
-
-                    //Server.writers.stream().forEach((writer) -> {
-                    //writer.println("CONTINUE_GAME" + s);
-                    //  });
-                    //ta bort spelaren ur streamen innan fortsatt spela
-                //}
-
-               
 
                 if (input == null) {
                     return;
@@ -241,6 +240,11 @@ public class ThreadController extends Thread {
             // writer from the sets, and close its socket.
             if (name != null) {
                 Server.names.remove(name);
+                for (int i = 0; i < Server.PLAYER_LIST.size(); i++) {
+                    if (Server.PLAYER_LIST.get(i).name == name) {
+                        Server.PLAYER_LIST.remove(Server.PLAYER_LIST.get(i));
+                    }
+                }
             }
             if (out != null) {
                 Server.writers.remove(out);
